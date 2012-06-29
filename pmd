@@ -1,0 +1,25 @@
+#!/bin/sh
+PMD_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+pmd() {
+  if [ "$#" -eq 0 ]; then
+    pmd help
+  else
+    case "$1" in
+      help)
+        echo 'pmd start : starts a timer'
+        ;;
+      start)
+        (
+          $PMD_DIR/pmd-counter 25 && growlnotify -n 'Pomodoro' -s -t 'POMODORO' -m 'The Pomodoro rings! Go take a rest!'
+        ) &
+        ;;
+      *)
+        echo 'invalid. try pmd help'
+        ;;
+    esac
+  fi
+}
+
+pmd "$@"
+

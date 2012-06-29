@@ -1,0 +1,42 @@
+#!/usr/bin/env macruby
+framework 'Cocoa'
+require 'date'
+
+class MyAppDelegate
+  def applicationDidFinishLaunching(notification)
+    menu = NSMenu.new
+    item = menu.addItemWithTitle("Void", action: :"void:", keyEquivalent:"")
+    statusBar = NSStatusBar.systemStatusBar
+    @item = item = statusBar._statusItemWithLength(0, withPriority:2137483647)
+    item.length = 0
+    item.menu = menu
+    item.highlightMode = true
+    item.length = NSVariableStatusItemLength
+    time = 25 * 60
+    if ARGV.length == 1
+      time = ARGV[0].to_i * 60
+    elsif ARGV.length == 2
+      time = ARGV[0].to_i * 60 + ARGV[1].to_i
+    end
+    @finish = DateTime.now + Rational(time, 86400)
+    NSTimer.scheduledTimerWithTimeInterval(1.0, target:self, selector: :"updateTime:", userInfo:nil, repeats:true)
+    update
+  end
+  def void(sender)
+    exit(false)
+  end
+  def updateTime(sender)
+    update
+  end
+  def update
+    left = (@finish - DateTime.now).*(86400).to_i
+    if left < 0
+      exit(true)
+    end
+    @item.title = "%d:%02d" % [ left / 60, left % 60 ]
+  end
+end
+
+app = NSApplication.sharedApplication
+app.delegate = MyAppDelegate.new
+app.run
