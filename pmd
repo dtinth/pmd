@@ -1,6 +1,15 @@
 #!/bin/sh
 PMD_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
+run_hook() {
+  NAME=$1
+  if [ -x ~/.pmd/hooks/$NAME ]; then
+    ~/.pmd/hooks/$NAME
+  elif [ -e ~/.pmd/hooks/$NAME ]; then
+    echo "WARNING: \"$NAME\" hook found but not executable"
+  fi
+}
+
 pmd() {
   if [ "$#" -eq 0 ]; then
     pmd help
@@ -10,8 +19,18 @@ pmd() {
         echo 'pmd start : starts a timer'
         ;;
       start)
+        echo $'\e[1;32mpomodoro start: \e[0m'
+        MIN="$2"
+        if [ ! "$MIN" ]; then MIN="25"; fi
+        date
+        run_hook start
         (
-          $PMD_DIR/pmd-counter 25 && growlnotify -n 'Pomodoro' -s -t 'POMODORO' -m 'The Pomodoro rings! Go take a rest!'
+          if $PMD_DIR/pmd-counter $MIN; then
+            growlnotify -n 'Pomodoro' -s -t 'POMODORO' -m 'The Pomodoro rings! Write X on your todo sheet! Go take a rest!'
+            run_hook finish
+          else
+            run_hook void
+          fi
         ) &
         ;;
       *)
