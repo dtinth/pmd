@@ -1,8 +1,9 @@
-
 pmd
 ====
 
 My simple Pomodoro timer for Mac OS X, command line based.
+
+<p style="text-align:center"><img src="http://i.imgur.com/Kk7CY.png" alt="pmd!!!"></p>
 
 Installation
 ------------
