@@ -1,69 +1,98 @@
-#!/usr/bin/env macruby
-framework 'Cocoa'
-require 'date'
-require 'socket'
+#!/usr/bin/env node
 
-$pomodoro_text = 'N/A'
+var $ = require('NodObjC')
+require('uvcf').ref()
 
-$server_thread = Thread.new do
-  File.unlink '/tmp/pomodoro.sock'
-  UNIXServer.open '/tmp/pomodoro.sock' do |server|
-    while client = server.accept
-      client.puts "#{$pomodoro_text}"
-      client.close
-    end
-  end
-end
+var timeLeft = '...'
 
-class MyAppDelegate
+$.import('Cocoa')
 
-  def applicationDidFinishLaunching(notification)
+var MyAppDelegate = $.NSObject.extend('MyAppDelegate')
 
-    menu = NSMenu.new
-    item = menu.addItemWithTitle("Void", action: :"void:", keyEquivalent:"")
-    statusBar = NSStatusBar.systemStatusBar
+function number(string, fallback) {
+  var n = +string
+  return isNaN(n) ? fallback : n
+}
 
-    # thanks tunnelblick!! (from MenuController.m)
-    @item = item = statusBar._statusItemWithLength(0, withPriority:2147483646)
-    statusBar.removeStatusItem(item)
-    statusBar._insertStatusItem(item, withPriority:2147483646)
-    item.length = 0
-    item.menu = menu
-    item.highlightMode = true
-    item.length = NSVariableStatusItemLength
-    time = 25 * 60
-    if ARGV.length == 1
-      time = ARGV[0].to_i * 60
-    elsif ARGV.length == 2
-      time = ARGV[0].to_i * 60 + ARGV[1].to_i
-    end
+var duration = number(process.argv[2], 25) * 60 + number(process.argv[3], 0)
 
-    @finish = DateTime.now + Rational(time, 86400)
-    NSTimer.scheduledTimerWithTimeInterval(1.0, target:self, selector: :"updateTime:", userInfo:nil, repeats:true)
-    update
-    
-  end
+MyAppDelegate.addMethod('applicationDidFinishLaunching:', 'v@:@', function(self, _, notification) {
 
-  def void(sender)
-    $server_thread.exit
-    exit(false)
-  end
+  var menu = $.NSMenu('alloc')('init')
+  var item = menu('addItemWithTitle', $('Void'), 'action', 'void:', 'keyEquivalent', $(''))
+  var statusBar = $.NSStatusBar('systemStatusBar')
 
-  def updateTime(sender)
-    update
-  end
+  var status = statusBar('_statusItemWithLength', 0, 'withPriority', 2147483646)
+  statusBar('removeStatusItem', status)
+  statusBar('_insertStatusItem', status, 'withPriority', 2147483646)
 
-  def update
-    left = (@finish - DateTime.now).*(86400).to_i
-    @item.title = $pomodoro_text = "%d:%02d" % [ left / 60, left % 60 ]
-    if left < 0
-      $server_thread.exit
-      exit(true)
-    end
-  end
+  status('retain')
+  status('setLength', 0)
+  status('setMenu', menu)
+  status('setHighlightMode', true)
+  status('setLength', $.NSVariableStatusItemLength)
+  status('setTitle', $('...'))
 
-end
+  var start = new Date().getTime()
+  var finish = start + duration * 1000
 
-app = NSApplication.sharedApplication
-app.delegate = MyAppDelegate.new
-app.run
+  function update() {
+    var seconds = Math.floor((finish - new Date().getTime()) / 1000)
+    var m = Math.floor(seconds / 60)
+    var s = seconds % 60
+    if (seconds < 0) {
+      quit(0)
+    } else {
+      status('setTitle', $((timeLeft = m + ':' + (s < 10 ? '0' : '') + s)))
+    }
+  }
+
+  var interval = setInterval(update, 1000)
+
+  function quit(code) {
+    clearInterval(interval)
+    statusBar('removeStatusItem', status)
+    status('release')
+    process.exit(code)
+  }
+
+  self._void = function() {
+    quit(1)
+  }
+
+})
+
+MyAppDelegate.addMethod('void:', 'v@:@', function(self, _, sender) {
+  self._void()
+})
+
+MyAppDelegate.register()
+
+var net = require('net')
+
+function error(e) {
+  console.error(e)
+}
+
+var server = net.createServer(function(socket) {
+  try {
+    socket.on('error', error)
+    socket.end(timeLeft)
+  } catch (e) {
+    error(e)
+  }
+})
+
+try {
+  require('fs').unlinkSync('/tmp/pomodoro.sock')
+} catch (e) {
+  // cannot delete
+}
+
+server.on('error', error)
+server.listen('/tmp/pomodoro.sock')
+
+var pool = $.NSAutoreleasePool('alloc')('init')
+var app  = $.NSApplication('sharedApplication')
+app('setDelegate', MyAppDelegate('alloc')('init'))
+app('run')

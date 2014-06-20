@@ -1,0 +1,23 @@
+{
+  "name": "pmd",
+  "version": "0.0.0",
+  "description": "My Pomodoro timer",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/dtinth/pmd.git"
+  },
+  "author": "Thai Pangsakulyanont <org.yi.dttvb@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/dtinth/pmd/issues"
+  },
+  "homepage": "https://github.com/dtinth/pmd",
+  "dependencies": {
+    "NodObjC": "0.0.15",
+    "uvcf": "^0.1.1"
+  }
+}
