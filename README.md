@@ -10,13 +10,17 @@ pmd
 
 My simple Pomodoro timer for Mac OS X, command line based.
 
+This new version does not require MacRuby anymore, but instead relies on the awesome [__cocoa__](https://github.com/patrickhno/cocoa) gem (see the [pull request](https://github.com/dtinth/pmd/pull/1)).
+For the older MacRuby version, please see the [archive_macruby](https://github.com/dtinth/pmd/tree/archive_macruby) branch.
+
 <p style="text-align:center"><img src="http://i.imgur.com/Kk7CY.png" alt="pmd!!!"></p>
+
 
 Installation
 ------------
 Please install:
 
-* MacRuby
+* `gem install cocoa` or `bundle install`
 * Growl and growlnotify
 
 Then clone this repository and add this to your `~/.bash_profile`:
