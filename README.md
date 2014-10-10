@@ -1,3 +1,10 @@
+
+Deprecated
+==========
+
+Check out the [Thyme](http://thymerb.com/) project by @hughbien with my [Mac OS X Status Bar Integration](https://github.com/dtinth/thyme_osx_ui) instead.
+
+
 pmd
 ====
 
